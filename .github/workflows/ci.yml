@@ -1,16 +1,13 @@
 name: CHECK
 
 on:
-  push:
-    branches:
-      - main
   pull_request:
     branches:
       - '**'
       
 jobs:
   cargo:
-    name: Cargo test, clippy and doc
+    name: Cargo
     runs-on: ubuntu-latest
     permissions:
       contents: write

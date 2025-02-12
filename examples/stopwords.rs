@@ -1,3 +1,7 @@
+/// generate stop words
+///
+/// cargo build -r --example stopwords
+/// ./target/release/examples/stopwords
 use jieba_rs::Jieba;
 use tracing::info;
 
@@ -7,13 +11,6 @@ use std::{
     fs::{self, read_to_string},
     io::Write,
 };
-
-#[cfg(not(target_env = "msvc"))]
-use tikv_jemallocator::Jemalloc;
-
-#[cfg(not(target_env = "msvc"))]
-#[global_allocator]
-static GLOBAL: Jemalloc = Jemalloc;
 
 fn main() {
     tracing_subscriber::fmt().init();

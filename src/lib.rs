@@ -1,6 +1,8 @@
+use bincode::{Decode, Encode};
 pub use config::CONFIG;
 pub use controller::{case, logo, search, style};
-use rocksdb::DB;
+use fjall::{KvSeparationOptions, PartitionCreateOptions, PartitionHandle};
+use scraper::Html;
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use tantivy::Searcher;
@@ -12,14 +14,24 @@ mod tantivy;
 
 #[derive(Clone)]
 pub struct AppState {
-    pub db: Arc<DB>,
+    pub db: PartitionHandle,
     pub searcher: Arc<Searcher>,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+pub fn kv_sep_partition_option() -> PartitionCreateOptions {
+    PartitionCreateOptions::default()
+        .max_memtable_size(128_000_000)
+        .with_kv_separation(
+            KvSeparationOptions::default()
+                .separation_threshold(750)
+                .file_target_size(256_000_000),
+        )
+}
+
+#[derive(Debug, Encode, Decode, Serialize, Deserialize)]
 pub struct Case {
     #[serde(rename(deserialize = "原始链接"))]
-    pub url: String,
+    pub doc_id: String,
     #[serde(rename(deserialize = "案号"))]
     pub case_id: String,
     #[serde(rename(deserialize = "案件名称"))]
@@ -48,4 +60,9 @@ pub struct Case {
     pub legal_basis: String,
     #[serde(rename(deserialize = "全文"))]
     pub full_text: String,
+}
+
+pub fn remove_html_tags(html: &str) -> String {
+    let document = Html::parse_document(html);
+    document.root_element().text().collect::<Vec<_>>().join(" ")
 }
